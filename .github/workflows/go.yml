@@ -18,7 +18,29 @@ jobs:
         go-version: '1.20'
 
     - name: Build
-      run: go build -v -o myapp.exe ./...
+      run: go build -v -o python-snippet-decompiler.exe ./...
 
-    - name: hold on let me check the file list
-      run: Get-ChildItem
+    - name: Archive Build
+      run: Compress-Archive -Path "python-snippet-decompiler.exe","lib" -DestinationPath python-snippet-decompiler-unofficial.zip
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v3.${{ github.run_number }}
+        release_name: "v3 unofficial (${{ github.run_number }})"
+        draft: false
+        prerelease: true
+
+    - name: Upload
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: python-snippet-decompiler-unofficial.zip
+        asset_name: python-snippet-decompiler-unofficial.zip
+        asset_content_type: application/zip
